@@ -1,5 +1,5 @@
 # Verwende das offizielle MariaDB-Image als Basis
-FROM mariadb:latest
+FROM mariadb:10.5
 RUN apt-get update && \
     apt-get install -y mariadb-client && \
     rm -rf /var/lib/apt/lists/*

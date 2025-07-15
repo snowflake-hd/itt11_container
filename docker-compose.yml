@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: DockerfileMariaDB
-    image: mariadb
+    image: mariadb:10.5
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
@@ -44,7 +44,7 @@ services:
       - "${PORT_OPCBROWSER}:4000"
 
   mongodb:
-    image: mongo
+    image: mongo:5.0
     restart: always
     ports:
       - "${PORT_MONGODB}:27017"
