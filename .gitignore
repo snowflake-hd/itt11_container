@@ -5,5 +5,5 @@ mongo_data/
 mosquitto_data/
 mosquitto_log/
 mysqlIdata/
-mysqlId/
 opcrouter_data/
+mysqld/
