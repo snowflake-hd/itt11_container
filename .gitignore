@@ -1,0 +1,9 @@
+./nodered_data/
+./db_data/
+./.claude/
+./mongo_data/
+./mosquitto_data/
+./mosquitto_log/
+./mysqlIdata/
+./mysqlId/
+./opcrouter_data/
