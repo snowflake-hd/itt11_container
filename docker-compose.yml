@@ -41,7 +41,7 @@ services:
     image: iotechsys/opc-ua-browser
     restart: always
     ports:
-      - "${PORT_OPCBROWSER}:4000"
+      - "${PORT_OPCBROWSER}:8080"
 
   mongodb:
     image: mongo:5.0
