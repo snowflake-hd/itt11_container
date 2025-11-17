@@ -73,6 +73,7 @@ services:
   nodered:
     image: nodered/node-red
     restart: always
+    user: root
     ports:
       - "${PORT_NODERED}:1880"
     volumes:
