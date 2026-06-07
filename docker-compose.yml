@@ -34,6 +34,7 @@ services:
       - OR_I_ACCEPT_EULA=true
     volumes:
       - ./opcrouter_data:/data
+      - opcrouter_config:/app/data # Konfiguration und Lizenz
     ports:
       - "${PORT_OPCROUTER}:8080"
 
@@ -94,3 +95,5 @@ volumes:
   nodered_data:
   mosquitto_data:
   mosquitto_log:
+  opcrouter_data:
+  opcrouter_config:
