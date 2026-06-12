@@ -9,16 +9,14 @@
     system = "x86_64-linux";
 
     pkgs = nixpkgs.legacyPackages.${system};
+    lib = import ./lib.nix;
 
     mariadb = import ./modules/mariadb.nix {
-      inherit pkgs self;
-    };
-    default = import ./modules/default.nix {
-      inherit pkgs self;
+      inherit pkgs self lib;
     };
   in {
     devShells.${system} = {
-      default = default;
+      default = mariadb;
       mariadb = mariadb;
     };
   };

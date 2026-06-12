@@ -1,4 +1,8 @@
-{ pkgs, self, ... }:
+{ pkgs, self, lib }:
+
+let
+  colors = lib.colors;
+in
 
 pkgs.mkShell {
   name = "mariadb-env";
@@ -14,25 +18,17 @@ pkgs.mkShell {
   shellHook = ''
     set -e
 
-    COMPOSE_FILE="$PWD/docker-compose.yml"
-    ENV_FILE="$PWD/.env"
-    PROJECT_NAME="itt11-mariadb"
+    ${lib.setupEnv { inherit colors; }}
 
-    GREEN='\033[0;32m'
-    YELLOW='\033[1;33m'
-    RED='\033[0;31m'
-    NC='\033[0m'
-
-    echo -e "''${GREEN}=== MariaDB Development Shell ===''${NC}"
+    echo -e "$GREEN=== MariaDB Development Shell ===$NC"
 
     if [[ -f "$ENV_FILE" ]]; then
-      echo -e "''${YELLOW}Loading .env from: $ENV_FILE''${NC}"
+      echo -e "$YELLOW Loading .env from: $ENV_FILE $NC"
       set -a
-      # shellcheck disable=SC1090
       source "$ENV_FILE"
       set +a
     else
-      echo -e "''${YELLOW}Loading defaults (no .env found)''${NC}"
+      echo -e "$YELLOW Loading defaults (no .env found)$NC"
       export MARIADB_ROOT_PASSWORD="schueler"
       export PORT_MARIADB="3308"
       export PORT_PHPMYADMIN="8082"
@@ -44,14 +40,14 @@ pkgs.mkShell {
     export PORT_MARIADB PORT_PHPMYADMIN MARIADB_ROOT_PASSWORD
 
     if [[ ! -f "$COMPOSE_FILE" ]]; then
-      echo -e "''${RED}ERROR: compose file not found at $COMPOSE_FILE''${NC}"
+      echo -e "$RED ERROR: compose file not found at $COMPOSE_FILE$NC"
       return 1
     fi
 
-    echo -e "''${YELLOW}Starting MariaDB and phpMyAdmin containers...''${NC}"
+    echo -e "$YELLOW Starting MariaDB and phpMyAdmin containers...$NC"
     docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d maria phpmyadmin 2>/dev/null || true
 
-    echo -e "''${YELLOW}Waiting for MariaDB to be ready...''${NC}"
+    echo -e "$YELLOW Waiting for MariaDB to be ready...$NC"
 
     max_attempts=30
     attempt=0
@@ -59,37 +55,37 @@ pkgs.mkShell {
     while [[ $attempt -lt $max_attempts ]]; do
       maria_container=$(docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" ps -q maria 2>/dev/null) || true
       if [[ -n "$maria_container" ]] && docker exec "$maria_container" mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e "SELECT 1;" &>/dev/null; then
-        echo -e "''${GREEN}✓ MariaDB is ready''${NC}"
+        echo -e "$GREEN ✓ MariaDB is ready$NC"
         break
       fi
       attempt=$((attempt + 1))
       if [[ $attempt -ge $max_attempts ]]; then
-        echo -e "''${RED}ERROR: MariaDB failed to start after $max_attempts attempts''${NC}"
+        echo -e "$RED ERROR: MariaDB failed to start after $max_attempts attempts$NC"
         return 1
       fi
-      echo -ne "''${YELLOW}Attempt $attempt/$max_attempts...''${NC}\r"
+      echo -ne "$YELLOW Attempt $attempt/$max_attempts...$NC\r"
       sleep 1
     done
 
     if curl -s "http://127.0.0.1:$PORT_PHPMYADMIN" >/dev/null 2>&1; then
-      echo -e "''${GREEN}✓ phpMyAdmin is ready at http://127.0.0.1:$PORT_PHPMYADMIN''${NC}"
+      echo -e "$GREEN ✓ phpMyAdmin is ready at http://127.0.0.1:$PORT_PHPMYADMIN$NC"
     else
-      echo -e "''${YELLOW}phpMyAdmin starting, may take a moment''${NC}"
+      echo -e "$YELLOW phpMyAdmin starting, may take a moment$NC"
     fi
 
     connect() {
-      mariadb --host=127.0.0.1 --port="$PORT_MARIADB" -u root -p"$MARIADB_ROOT_PASSWORD" --ssl=0
+      mariadb --host=127.0.0.1 --port="$PORT_MARIADB" -u root -p"$MARIADB_ROOT_PASSWORD"
     }
 
     status() {
-      echo -e "''${YELLOW}=== Container Status ===''${NC}"
+      echo -e "$YELLOW === Container Status ===$NC"
       docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" ps
     }
 
     restart_db() {
-      echo -e "''${YELLOW}Restarting MariaDB...''${NC}"
+      echo -e "$YELLOW Restarting MariaDB...$NC"
       docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" restart maria
-      echo -e "''${GREEN}✓ MariaDB restarted''${NC}"
+      echo -e "$GREEN ✓ MariaDB restarted$NC"
     }
 
     logs_db() {
@@ -99,22 +95,22 @@ pkgs.mkShell {
     export -f connect status restart_db logs_db
 
     echo ""
-    echo -e "''${GREEN}=== Available Commands ===''${NC}"
+    echo -e "$GREEN === Available Commands ===$NC"
     echo "  connect        - Connect to MariaDB using mariadb-cli"
     echo "  status         - Show container status"
     echo "  restart_db     - Restart MariaDB container"
     echo "  logs_db        - View MariaDB logs"
     echo ""
-    echo -e "''${GREEN}=== Service Information ===''${NC}"
+    echo -e "$GREEN === Service Information ===$NC"
     echo "  MariaDB        - localhost:$PORT_MARIADB"
     echo "  phpMyAdmin     - http://localhost:$PORT_PHPMYADMIN"
     echo ""
 
     cleanup() {
       echo ""
-      echo -e "''${YELLOW}Shutting down containers...''${NC}"
+      echo -e "$YELLOW Shutting down containers...$NC"
       docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" down 2>/dev/null || true
-      echo -e "''${GREEN}✓ Cleanup complete''${NC}"
+      echo -e "$GREEN ✓ Cleanup complete$NC"
     }
 
     trap cleanup EXIT
