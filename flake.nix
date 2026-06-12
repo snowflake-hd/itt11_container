@@ -8,16 +8,26 @@
   outputs = { self, nixpkgs }: let
     system = "x86_64-linux";
 
-    pkgs = nixpkgs.legacyPackages.${system};
+    pkgs = import nixpkgs {
+        inherit system;
+
+        config.allowUnfree = true;
+     };
+
     lib = import ./modules/lib.nix;
 
     mariadb = import ./modules/mariadb.nix {
+      inherit pkgs self lib;
+    };
+
+    mongodb = import ./modules/mongodb.nix {
       inherit pkgs self lib;
     };
   in {
     devShells.${system} = {
       default = mariadb;
       mariadb = mariadb;
+      mongodb = mongodb;
     };
   };
 }

@@ -28,4 +28,20 @@
       return 1
     fi
   '';
+
+  containerStatus = {}: ''
+      echo -e "$YELLOW === Container Status ===$NC"
+      docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" ps
+  '';
+
+  restartContainer = { container, actualName ? container}: ''
+      echo -e "$YELLOW Restarting ${actualName}...$NC"
+      docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" restart ${container}
+      echo -e "$GREEN ✓ ${actualName} restarted$NC"
+  '';
+
+  containerLogs = { container}: ''
+    docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" logs -f ${container}
+  '';
+
 }

@@ -2,6 +2,11 @@
 
 let
   colors = lib.colors;
+
+  containerInformation = rec {
+    container = "maria";
+    actualName = "MariaDB";
+  };
 in
 pkgs.mkShell {
   name = "mariadb-env";
@@ -71,18 +76,15 @@ pkgs.mkShell {
     }
 
     status() {
-      echo -e "$YELLOW === Container Status ===$NC"
-      docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" ps
+      ${lib.containerStatus {}}
     }
 
     restart_db() {
-      echo -e "$YELLOW Restarting MariaDB...$NC"
-      docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" restart maria
-      echo -e "$GREEN ✓ MariaDB restarted$NC"
+      ${lib.restartContainer containerInformation}
     }
 
     logs_db() {
-      docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" logs -f maria
+      ${lib.containerLogs { container = containerInformation.container; }}
     }
 
     export -f connect status restart_db logs_db
