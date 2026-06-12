@@ -3,16 +3,12 @@
 let
   colors = lib.colors;
 in
-
 pkgs.mkShell {
   name = "mariadb-env";
 
   buildInputs = with pkgs; [
     docker
-    docker-compose
     mariadb
-    curl
-    jq
   ];
 
   shellHook = ''
@@ -39,10 +35,7 @@ pkgs.mkShell {
     MARIADB_ROOT_PASSWORD="''${MARIADB_ROOT_PASSWORD:-schueler}"
     export PORT_MARIADB PORT_PHPMYADMIN MARIADB_ROOT_PASSWORD
 
-    if [[ ! -f "$COMPOSE_FILE" ]]; then
-      echo -e "$RED ERROR: compose file not found at $COMPOSE_FILE$NC"
-      return 1
-    fi
+    ${lib.isComposeExisting {}}
 
     echo -e "$YELLOW Starting MariaDB and phpMyAdmin containers...$NC"
     docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d maria phpmyadmin 2>/dev/null || true
