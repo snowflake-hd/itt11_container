@@ -7,3 +7,4 @@ mosquitto_log/
 mysqlIdata/
 opcrouter_data/
 mysqld/
+.idea
