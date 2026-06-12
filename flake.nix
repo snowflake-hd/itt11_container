@@ -13,9 +13,12 @@
     mariadb = import ./modules/mariadb.nix {
       inherit pkgs self;
     };
+    default = import ./modules/default.nix {
+      inherit pkgs self;
+    };
   in {
     devShells.${system} = {
-      default = mariadb;
+      default = default;
       mariadb = mariadb;
     };
   };
